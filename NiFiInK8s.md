@@ -1,0 +1,62 @@
+# Run Nifi in Kubernetes
+
+```
+# data cleaning web server
+apiVersion: v1
+kind: Service
+metadata:
+  name: nifi-external-server-svc
+  namespace: data-cleaning
+  labels:
+    name: nifiServer
+    role: service
+    app: datacleaning
+spec:
+  ports:
+  - port: 8080
+    nodePort: 32333
+  selector:
+    name: nifiServer
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nifi-internal-server-svc
+  namespace: data-cleaning
+  labels:
+    name: nifiServer
+    role: service
+    app: datacleaning
+spec:
+  ports:
+  - port: 8080
+  selector:
+    name: nifiServer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nifi-deployment
+  namespace: data-cleaning
+  labels:
+    name: nifiServer
+    app: datacleaning
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: nifiweb
+      labels:
+        name: nifiServer
+        app: datacleaning
+    spec:
+      containers:
+      - name: nifi
+        image: 192.168.200.167:5000/thingnet-nifi
+        command: ["/bin/bash", "-c", "bin/nifi.sh start && cat logs/nifi-bootstrap.log && tail -f /dev/null"]
+      nodeSelector:
+        dev: openstack
+```
+
+**Note:** If nothing is running, the pod in k8s will be completed. So that, use the command `tail -f /dev/null`

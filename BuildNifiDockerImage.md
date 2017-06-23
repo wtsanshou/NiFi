@@ -112,7 +112,7 @@ VOLUME ["${NIFI_HOME}/database_repository", \
 USER nifi
 WORKDIR ${NIFI_HOME}
 EXPOSE 8080 8081
-CMD ["bin/nifi.sh", "start"]
+CMD ["bin/nifi.sh", "run"]
 ```
 
 # Run NiFi docker image
