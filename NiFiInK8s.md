@@ -1,62 +1,56 @@
 # Run Nifi in Kubernetes
 
-```
-# data cleaning web server
-apiVersion: v1
-kind: Service
-metadata:
-  name: nifi-external-server-svc
-  namespace: data-cleaning
-  labels:
-    name: nifiServer
-    role: service
-    app: datacleaning
-spec:
-  ports:
-  - port: 8080
-    nodePort: 32333
-  selector:
-    name: nifiServer
-  type: NodePort
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nifi-internal-server-svc
-  namespace: data-cleaning
-  labels:
-    name: nifiServer
-    role: service
-    app: datacleaning
-spec:
-  ports:
-  - port: 8080
-  selector:
-    name: nifiServer
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: nifi-deployment
-  namespace: data-cleaning
-  labels:
-    name: nifiServer
-    app: datacleaning
-spec:
-  replicas: 1
-  template:
-    metadata:
-      name: nifiweb
-      labels:
-        name: nifiServer
-        app: datacleaning
-    spec:
-      containers:
-      - name: nifi
-        image: 192.168.200.167:5000/thingnet-nifi
-        command: ["/bin/bash", "-c", "bin/nifi.sh start && cat logs/nifi-bootstrap.log && tail -f /dev/null"]
-      nodeSelector:
-        dev: openstack
+## Deploy Nifi in K8s
+
+In k8s master, run nifi.yaml (in the folder k8s_yaml):
+```bash
+kubectl create -f nifi.yaml
 ```
 
-**Note:** If nothing is running, the pod in k8s will be completed. So that, use the command `tail -f /dev/null`
+**Note:** If nothing is running, the pod in k8s will be completed. So that, use the command `tail -f /dev/null` in the nifi.yaml
+
+## Access k8s service
+
+The following works are doing in NiFi GUI.
+
+### ListenHttp
+
+It is used to listen recived data from k8s micro service
+
+**e.g:**
+
+**Nifi Setting:**
+
+**Base Path:** nifiListener
+**Listening Port:** 8086
+
+**k8s Setting:**
+
+**Http Post to:** http://<nifi_ip>:8086/nifiListener
+
+Here we can use kube-dns to resove nifi_ip. e.g: http://nifi-internal-server-svc.data-cleaning.svc.cluster.local:8086/nifiListener
+
+### PostHttp
+
+It is used to POST data to a target
+
+**e.g:**
+
+**Nifi Setting:**
+```
+URL: http://dcweb-internal-server-svc.data-cleaning.svc.cluster.local:8084/publish
+
+SendAsFlowFile: false
+Use Chunked Encoding: false
+Content-type: application/json
+```
+
+**Note:** PostHttp doesn't have response function
+
+### InvokeHttp
+
+It could Http methods (GET, POST, PUT ...) and has a lot more routing options (Failure, No Retry, Original, Response, Retry)
+
+We used this to get response from k8s micro service.
+
+

@@ -117,7 +117,7 @@ CMD ["bin/nifi.sh", "run"]
 
 # Run NiFi docker image
 ```bash
-sudo docker exec -it -p 8888:8080 <docker_nifi_image_name> bash
+sudo docker run -it -p 8888:8080 <docker_nifi_image_name> bash
 ```
 
 # Access NiFi UI
