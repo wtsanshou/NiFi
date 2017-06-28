@@ -22,6 +22,7 @@ It is used to listen recived data from k8s micro service
 **Nifi Setting:**
 
 **Base Path:** nifiListener
+
 **Listening Port:** 8086
 
 **k8s Setting:**
@@ -53,4 +54,87 @@ It could Http methods (GET, POST, PUT ...) and has a lot more routing options (F
 
 We used this to get response from k8s micro service.
 
+## Demo
 
+### Sensor
+
+POST to:  http://nifimagr-internal-server-svc.data-cleaning:8086/nifiMagrListener
+
+### NiFi Manager
+
+* ListenHTTP: 
+```
+Base Path: nifiMagrListener
+
+Listening Port: 8086
+```
+
+* PostHTTP:
+```
+URL: http://nificleaner-internal-server-svc.data-cleaning.svc.cluster.local:8086/nifiCleanerListener
+
+SendAsFlowFile: false
+Use Chunked Encoding: false
+Content-type: application/json
+```
+
+### NiFi Cleaner
+
+* ListenHTTP: 
+
+```
+Base Path: nifiCleanerListener
+
+Listening Port: 8086
+```
+
+* InvokeHTTP:
+```
+HTTP Method: POST
+Remote URL: http://cleanmicro-internal-server-svc.data-cleaning.svc.cluster.local:8080/v0.1/clean
+
+SendAsFlowFile: false
+Use Chunked Encoding: false
+Content-type: application/json
+```
+
+* PostHTTP:
+
+Relationship with *InvokeHTTP*: `Response`
+
+```
+URL: http://nifitoweb-internal-server-svc.data-cleaning.svc.cluster.local:8086/nifiWebListener
+
+SendAsFlowFile: false
+Use Chunked Encoding: false
+Content-type: application/json
+```
+
+### NiFi To Web
+
+* ListenHTTP: 
+
+```
+Base Path: nifiWebListener
+
+Listening Port: 8086
+```
+
+* PostHTTP:
+```
+URL: http://dcweb-internal-server-svc.data-cleaning.svc.cluster.local:8084/publish
+
+SendAsFlowFile: false
+Use Chunked Encoding: false
+Content-type: application/json
+```
+
+### Web Server
+
+* ListenHTTP: 
+
+```
+Base Path: publish
+
+Listening Port: 8084
+```
