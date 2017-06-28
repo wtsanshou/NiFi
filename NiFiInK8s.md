@@ -110,6 +110,16 @@ Use Chunked Encoding: false
 Content-type: application/json
 ```
 
+### Cleaner
+
+* ListenHTTP and Response
+
+```
+Base Path: v0.1/clean
+
+Listening Port: 8084
+```
+
 ### NiFi To Web
 
 * ListenHTTP: 
